@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Royal Flush Casino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Ambient particles -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- Scanline + vignette overlay -->
+<div class="overlay-fx"></div>
+
+<!-- ═══════════════════════════════════ LOBBY ═══════════════════════════════════ -->
+<div id="lobby" class="screen active">
+  <div class="lobby-inner">
+    <div class="marquee-lights top" id="marqTop"></div>
+
+    <div class="lobby-hero">
+      <div class="logo-crown">♛</div>
+      <h1 class="logo-title">ROYAL FLUSH</h1>
+      <p class="logo-sub">C · A · S · I · N · O</p>
+      <div class="logo-divider"><span></span><span class="diamond">◆</span><span></span></div>
+      <p class="logo-tagline">Where Legends Are Made</p>
+    </div>
+
+    <div class="hud-strip">
+      <div class="hud-coin">
+        <span class="hud-label">CREDITS</span>
+        <span class="hud-value" id="lobbyCoins">1,000</span>
+      </div>
+    </div>
+
+    <div class="game-grid">
+      <div class="game-card" data-game="slots" onclick="goGame('slots')">
+        <canvas class="game-preview" id="prevSlots" width="260" height="140"></canvas>
+        <div class="game-card-body">
+          <div class="game-icon">🎰</div>
+          <h2>Lucky Reels</h2>
+          <p>Spin 3 reels · Match symbols · Win big</p>
+          <div class="game-badge">JACKPOT × 10</div>
+        </div>
+        <button class="play-btn">PLAY NOW</button>
+      </div>
+
+      <div class="game-card" data-game="wheel" onclick="goGame('wheel')">
+        <canvas class="game-preview" id="prevWheel" width="260" height="140"></canvas>
+        <div class="game-card-body">
+          <div class="game-icon">🎡</div>
+          <h2>Fortune Wheel</h2>
+          <p>Spin the wheel · Land your prize</p>
+          <div class="game-badge">MEGA WIN × 15</div>
+        </div>
+        <button class="play-btn">PLAY NOW</button>
+      </div>
+
+      <div class="game-card" data-game="blackjack" onclick="goGame('blackjack')">
+        <canvas class="game-preview" id="prevBJ" width="260" height="140"></canvas>
+        <div class="game-card-body">
+          <div class="game-icon">🃏</div>
+          <h2>Blackjack 21</h2>
+          <p>Beat the dealer · Hit or stand</p>
+          <div class="game-badge">BLACKJACK 3:2</div>
+        </div>
+        <button class="play-btn">PLAY NOW</button>
+      </div>
+    </div>
+
+    <div class="leaderboard-strip">
+      <h3>🏆 HALL OF CHAMPIONS</h3>
+      <ul id="lobbyBoard"></ul>
+    </div>
+
+    <div class="marquee-lights bottom" id="marqBot"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ SLOTS ═══════════════════════════════════ -->
+<div id="slotsScreen" class="screen">
+  <div class="game-screen-inner">
+    <div class="game-topbar">
+      <button class="back-btn" onclick="goLobby()">← LOBBY</button>
+      <h2 class="game-title-bar">🎰 Lucky Reels</h2>
+      <div class="topbar-coins"><span class="hud-label">CREDITS</span><span id="slotsCoins" class="hud-value">1,000</span></div>
+    </div>
+
+    <!-- Machine cabinet -->
+    <div class="slot-cabinet">
+      <div class="cabinet-top">
+        <div class="cabinet-lights" id="cabinetLights"></div>
+        <div class="cabinet-brand">LUCKY REELS</div>
+      </div>
+
+      <div class="slot-body">
+        <!-- Screen glow -->
+        <div class="slot-screen">
+          <div class="reel-window">
+            <canvas id="slotsCanvas" width="480" height="200"></canvas>
+          </div>
+          <div class="payline-marker left">◀</div>
+          <div class="payline-marker right">▶</div>
+        </div>
+
+        <div class="slot-result-zone"><p id="slotsResult">INSERT CREDITS AND PULL</p></div>
+
+        <div class="slot-controls">
+          <div class="bet-block">
+            <label>BET PER SPIN</label>
+            <div class="bet-row">
+              <button class="cBtn" onclick="adjBet('slots',-10)">−</button>
+              <input type="number" id="slotsBet" value="10" min="10" max="500" step="10">
+              <button class="cBtn" onclick="adjBet('slots',10)">+</button>
+            </div>
+            <div class="bet-presets">
+              <button onclick="setBetVal('slots',10)">10</button>
+              <button onclick="setBetVal('slots',50)">50</button>
+              <button onclick="setBetVal('slots',100)">100</button>
+              <button onclick="setBetVal('slots',500)">500</button>
+            </div>
+          </div>
+
+          <div class="spin-block">
+            <button id="slotsSpinBtn" class="big-spin-btn" onclick="spinSlots()">
+              <span class="bsb-label">SPIN</span>
+            </button>
+          </div>
+
+          <div class="paytable-block">
+            <div class="pt-title">PAYTABLE</div>
+            <div class="pt-row"><span>7️⃣7️⃣7️⃣</span><span class="pt-mult">×10</span></div>
+            <div class="pt-row"><span>💎💎💎</span><span class="pt-mult">×7</span></div>
+            <div class="pt-row"><span>⭐⭐⭐</span><span class="pt-mult">×5</span></div>
+            <div class="pt-row"><span>🍀🍀🍀</span><span class="pt-mult">×4</span></div>
+            <div class="pt-row"><span>🍒🍒🍒</span><span class="pt-mult">×3</span></div>
+            <div class="pt-row"><span>ANY 2</span><span class="pt-mult">×2</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ WHEEL ═══════════════════════════════════ -->
+<div id="wheelScreen" class="screen">
+  <div class="game-screen-inner">
+    <div class="game-topbar">
+      <button class="back-btn" onclick="goLobby()">← LOBBY</button>
+      <h2 class="game-title-bar">🎡 Fortune Wheel</h2>
+      <div class="topbar-coins"><span class="hud-label">CREDITS</span><span id="wheelCoins" class="hud-value">1,000</span></div>
+    </div>
+
+    <div class="wheel-layout">
+      <div class="wheel-stage">
+        <div class="wheel-stand-top"></div>
+        <div class="wheel-pointer-wrap">
+          <div class="wheel-pointer-tri"></div>
+        </div>
+        <div class="wheel-ring-outer">
+          <div class="wheel-ring-inner">
+            <canvas id="wheelCanvas" width="420" height="420"></canvas>
+          </div>
+        </div>
+        <div class="wheel-stand-base"></div>
+      </div>
+
+      <div class="wheel-panel">
+        <div class="wheel-result-zone"><p id="wheelResult">PLACE YOUR BET AND SPIN</p></div>
+        <div class="bet-block">
+          <label>BET AMOUNT</label>
+          <div class="bet-row">
+            <button class="cBtn" onclick="adjBet('wheel',-10)">−</button>
+            <input type="number" id="wheelBet" value="10" min="10" max="500" step="10">
+            <button class="cBtn" onclick="adjBet('wheel',10)">+</button>
+          </div>
+          <div class="bet-presets">
+            <button onclick="setBetVal('wheel',10)">10</button>
+            <button onclick="setBetVal('wheel',50)">50</button>
+            <button onclick="setBetVal('wheel',100)">100</button>
+            <button onclick="setBetVal('wheel',500)">500</button>
+          </div>
+        </div>
+        <button id="wheelSpinBtn" class="big-spin-btn wide-btn" onclick="spinWheel()">
+          <span class="bsb-label">SPIN THE WHEEL</span>
+        </button>
+        <div class="wheel-paytable">
+          <div class="pt-title">PRIZES</div>
+          <div class="pt-row wpt"><div class="swatch" style="background:#FFD700"></div><span>MEGA JACKPOT</span><span class="pt-mult">×15</span></div>
+          <div class="pt-row wpt"><div class="swatch" style="background:#C0392B"></div><span>LOSE</span><span class="pt-mult">× 0</span></div>
+          <div class="pt-row wpt"><div class="swatch" style="background:#2980B9"></div><span>BIG WIN</span><span class="pt-mult">×5</span></div>
+          <div class="pt-row wpt"><div class="swatch" style="background:#27AE60"></div><span>WIN</span><span class="pt-mult">×2</span></div>
+          <div class="pt-row wpt"><div class="swatch" style="background:#8E44AD"></div><span>BONUS</span><span class="pt-mult">×3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ BLACKJACK ═══════════════════════════════════ -->
+<div id="blackjackScreen" class="screen">
+  <div class="game-screen-inner">
+    <div class="game-topbar">
+      <button class="back-btn" onclick="goLobby()">← LOBBY</button>
+      <h2 class="game-title-bar">🃏 Blackjack 21</h2>
+      <div class="topbar-coins"><span class="hud-label">CREDITS</span><span id="bjCoins" class="hud-value">1,000</span></div>
+    </div>
+
+    <div class="felt-table">
+      <div class="felt-inner">
+        <!-- Dealer area -->
+        <div class="bj-zone dealer-zone">
+          <div class="zone-label">DEALER <span id="dealerCount" class="count-badge">—</span></div>
+          <div id="dealerHand" class="hand-area"></div>
+        </div>
+
+        <!-- Center messaging -->
+        <div class="bj-center">
+          <div class="bj-result" id="bjResult">PLACE YOUR BET TO BEGIN</div>
+          <div class="bj-deck-display">
+            <div class="deck-stack"></div>
+            <div class="deck-stack"></div>
+            <div class="deck-stack"></div>
+          </div>
+        </div>
+
+        <!-- Player area -->
+        <div class="bj-zone player-zone">
+          <div class="zone-label">YOU <span id="playerCount" class="count-badge">—</span></div>
+          <div id="playerHand" class="hand-area"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bj-controls">
+          <div class="bj-bet-area" id="bjBetArea">
+            <label>BET AMOUNT</label>
+            <div class="bet-row">
+              <button class="cBtn" onclick="adjBet('bj',-10)">−</button>
+              <input type="number" id="bjBet" value="25" min="10" max="500" step="10">
+              <button class="cBtn" onclick="adjBet('bj',10)">+</button>
+            </div>
+            <div class="bet-presets">
+              <button onclick="setBetVal('bj',10)">10</button>
+              <button onclick="setBetVal('bj',25)">25</button>
+              <button onclick="setBetVal('bj',50)">50</button>
+              <button onclick="setBetVal('bj',100)">100</button>
+            </div>
+            <button class="big-spin-btn wide-btn" onclick="bjDeal()">DEAL CARDS</button>
+          </div>
+
+          <div class="bj-action-area" id="bjActionArea" style="display:none">
+            <button class="bj-btn hit-btn" onclick="bjHit()">HIT</button>
+            <button class="bj-btn stand-btn" onclick="bjStand()">STAND</button>
+            <button class="bj-btn double-btn" onclick="bjDouble()" id="bjDoubleBtn">DOUBLE DOWN</button>
+          </div>
+
+          <div class="bj-new-area" id="bjNewArea" style="display:none">
+            <button class="big-spin-btn wide-btn" onclick="bjNewRound()">NEW HAND</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Win explosion overlay -->
+<div id="winOverlay" class="win-overlay">
+  <canvas id="confettiCanvas"></canvas>
+  <div class="win-overlay-text" id="winOverlayText">JACKPOT!</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
